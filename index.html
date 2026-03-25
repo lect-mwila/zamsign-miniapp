@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ZamSign – Digital Agreement Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --blue: #1A4F9C;
+    --green: #22A06B;
+    --gray: #F2F4F7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--gray);
+    margin: 0;
+    min-height: 100vh;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .btn-primary {
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-secondary {
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--blue);
+    border: 2px solid var(--blue);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+  }
+  .btn-danger {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+  }
+  input, textarea, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+    background: white;
+    transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--blue); }
+  label { font-size: 13px; color: #374151; font-weight: 600; margin-bottom: 4px; display: block; }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    margin-bottom: 12px;
+  }
+  .header {
+    background: var(--blue);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-text { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+  .tagline { font-size: 11px; opacity: 0.8; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .badge-pending { background: #FEF3C7; color: #92400E; }
+  .badge-signed { background: #D1FAE5; color: #065F46; }
+  .badge-progress { background: #DBEAFE; color: #1E40AF; }
+  canvas#signatureCanvas {
+    border: 2px solid #d1d5db;
+    border-radius: 10px;
+    background: white;
+    touch-action: none;
+    cursor: crosshair;
+    width: 100%;
+  }
+  .step-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #d1d5db;
+  }
+  .step-dot.active { background: var(--blue); }
+  .step-dot.done { background: var(--green); }
+  .agreement-preview {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .tab-bar {
+    display: flex;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    z-index: 100;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px;
+    cursor: pointer;
+    font-size: 10px;
+    color: #9ca3af;
+    border: none;
+    background: transparent;
+    gap: 3px;
+  }
+  .tab-item.active { color: var(--blue); }
+  .tab-item span { font-size: 20px; }
+  .content-area { padding: 16px; padding-bottom: 80px; }
+  .qr-container { display: flex; justify-content: center; padding: 16px; }
+  .sig-img { max-width: 160px; border: 1px solid #e5e7eb; border-radius: 6px; margin-top: 4px; }
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+  }
+  .modal-box {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .hidden { display: none !important; }
+  .progress-bar {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div id="screen-dashboard" class="screen active">
+  <div class="header">
+    <div>
+      <div class="logo-text">⚡ ZamSign</div>
+      <div class="tagline">Sign. Agree. Trust.</div>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="card" style="background: linear-gradient(135deg,#1A4F9C,#22A06B); color:white; padding:20px;">
+      <div style="font-size:13px; opacity:0.9;">Welcome to</div>
+      <div style="font-size:20px; font-weight:800;">ZamSign Platform</div>
+      <div style="font-size:12px; opacity:0.8; margin-top:4px;">Digital Agreements Made Simple.</div>
+      <button class="btn-primary" style="margin-top:16px; background:white; color:#1A4F9C;" onclick="showScreen('screen-create')">
+        📝 Initiate New Agreement
+      </button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+      <div class="card" style="text-align:center; cursor:pointer;" onclick="showTab('inbox')">
+        <div style="font-size:28px;">📥</div>
+        <div style="font-weight:700; color:#1A4F9C;">Inbox</div>
+        <div id="inbox-count" style="font-size:12px; color:#6b7280;">0 agreements</div>
+      </div>
+      <div class="card" style="text-align:center; cursor:pointer;" onclick="showTab('outbox')">
+        <div style="font-size:28px;">📤</div>
+        <div style="font-weight:700; color:#1A4F9C;">Outbox</div>
+        <div id="outbox-count" style="font-size:12px; color:#6b7280;">0 agreements</div>
+      </div>
+      <div class="card" style="text-align:center; cursor:pointer;" onclick="showTab('progress')">
+        <div style="font-size:28px;">🔄</div>
+        <div style="font-weight:700; color:#1A4F9C;">In Progress</div>
+        <div id="progress-count" style="font-size:12px; color:#6b7280;">0 agreements</div>
+      </div>
+      <div class="card" style="text-align:center; cursor:pointer;" onclick="showTab('completed')">
+        <div style="font-size:28px;">✅</div>
+        <div style="font-weight:700; color:#1A4F9C;">Completed</div>
+        <div id="completed-count" style="font-size:12px; color:#6b7280;">0 agreements</div>
+      </div>
+    </div>
+
+    <div id="dashboard-list"></div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="showTab('all')"><span>🏠</span>Home</button>
+    <button class="tab-item" onclick="showTab('inbox')"><span>📥</span>Inbox</button>
+    <button class="tab-item" onclick="showTab('outbox')"><span>📤</span>Outbox</button>
+    <button class="tab-item" onclick="showTab('progress')"><span>🔄</span>Progress</button>
+    <button class="tab-item" onclick="showScreen('screen-create')"><span>➕</span>New</button>
+  </div>
+</div>
+
+<!-- ===================== CREATE AGREEMENT ===================== -->
+<div id="screen-create" class="screen">
+  <div class="header">
+    <button onclick="showScreen('screen-dashboard')" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">←</button>
+    <div>
+      <div class="logo-text" style="font-size:17px;">Create Agreement</div>
+      <div class="tagline">Step <span id="create-step-num">1</span> of 5</div>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="progress-bar"><div class="progress-fill" id="create-progress" style="width:20%"></div></div>
+
+    <!-- STEP 1: Agreement Details -->
+    <div id="create-step-1">
+      <div class="card">
+        <div style="font-size:16px; font-weight:700; color:#1A4F9C; margin-bottom:16px;">📄 Agreement Details</div>
+        <div style="margin-bottom:12px;">
+          <label>Agreement Title *</label>
+          <input id="ag-title" type="text" placeholder="e.g. Sale of Motor Vehicle" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Amount (ZMW) *</label>
+          <input id="ag-amount" type="number" placeholder="e.g. 15000" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Description / Conditions *</label>
+          <textarea id="ag-desc" rows="4" placeholder="Describe the item(s) and conditions of the agreement..."></textarea>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="nextStep(1)">Continue →</button>
+    </div>
+
+    <!-- STEP 2: Seller Details -->
+    <div id="create-step-2" class="hidden">
+      <div class="card">
+        <div style="font-size:16px; font-weight:700; color:#1A4F9C; margin-bottom:16px;">👤 Seller / Initiator Details</div>
+        <div style="margin-bottom:12px;">
+          <label>Full Name *</label>
+          <input id="seller-name" type="text" placeholder="Your full legal name" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>NRC Number *</label>
+          <input id="seller-nrc" type="text" placeholder="e.g. 123456/78/1" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Residential Address *</label>
+          <textarea id="seller-address" rows="2" placeholder="Your residential address"></textarea>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Telegram Username *</label>
+          <input id="seller-username" type="text" placeholder="@yourusername" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-outline" onclick="prevStep(2)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(2)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Buyer Details -->
+    <div id="create-step-3" class="hidden">
+      <div class="card">
+        <div style="font-size:16px; font-weight:700; color:#1A4F9C; margin-bottom:16px;">👥 Buyer / Counterparty Details</div>
+        <div style="margin-bottom:12px;">
+          <label>Full Name *</label>
+          <input id="buyer-name" type="text" placeholder="Buyer's full legal name" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>NRC Number *</label>
+          <input id="buyer-nrc" type="text" placeholder="e.g. 789012/34/1" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Residential Address *</label>
+          <textarea id="buyer-address" rows="2" placeholder="Buyer's residential address"></textarea>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Telegram Username</label>
+          <input id="buyer-username" type="text" placeholder="@buyerusername (optional)" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:12px;">👁 Witness Details (Optional)</div>
+        <div style="margin-bottom:12px;">
+          <label>Witness Full Name</label>
+          <input id="witness-name" type="text" placeholder="Witness full name" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Witness NRC</label>
+          <input id="witness-nrc" type="text" placeholder="Witness NRC number" />
+        </div>
+        <div style="margin-bottom:0;">
+          <label>Witness Address</label>
+          <input id="witness-address" type="text" placeholder="Witness address" />
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn-outline" onclick="prevStep(3)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Seller Signature -->
+    <div id="create-step-4" class="hidden">
+      <div class="card">
+        <div style="font-size:16px; font-weight:700; color:#1A4F9C; margin-bottom:8px;">✍️ Seller Signature</div>
+        <p style="font-size:13px; color:#6b7280; margin:0 0 12px;">Sign below using your finger or stylus. This will be embedded in the agreement document.</p>
+        <canvas id="signatureCanvas" height="180"></canvas>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn-outline" style="padding:10px;" onclick="clearSignature('seller')">🗑 Clear</button>
+          <button class="btn-secondary" style="padding:10px;" onclick="saveSignature('seller')">✅ Save Signature</button>
+        </div>
+        <div id="seller-sig-preview" class="hidden" style="margin-top:10px;">
+          <label>Saved Signature:</label>
+          <img id="seller-sig-img" class="sig-img" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-outline" onclick="prevStep(4)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(4)" id="seller-sig-next-btn" disabled style="opacity:0.5;">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: Buyer Signature + Preview -->
+    <div id="create-step-5" class="hidden">
+      <div class="card">
+        <div style="font-size:16px; font-weight:700; color:#1A4F9C; margin-bottom:8px;">✍️ Buyer Signature</div>
+        <p style="font-size:13px; color:#6b7280; margin:0 0 12px;">Buyer signs below to confirm agreement.</p>
+        <canvas id="buyerSignatureCanvas" height="180"></canvas>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn-outline" style="padding:10px;" onclick="clearSignature('buyer')">🗑 Clear</button>
+          <button class="btn-secondary" style="padding:10px;" onclick="saveSignature('buyer')">✅ Save Signature</button>
+        </div>
+        <div id="buyer-sig-preview" class="hidden" style="margin-top:10px;">
+          <label>Saved Signature:</label>
+          <img id="buyer-sig-img" class="sig-img" />
+        </div>
+      </div>
+
+      <div id="witness-sig-card" class="card hidden">
+        <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:8px;">👁 Witness Signature</div>
+        <canvas id="witnessSignatureCanvas" height="140"></canvas>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn-outline" style="padding:10px;" onclick="clearSignature('witness')">🗑 Clear</button>
+          <button class="btn-secondary" style="padding:10px;" onclick="saveSignature('witness')">✅ Save Signature</button>
+        </div>
+        <div id="witness-sig-preview" class="hidden" style="margin-top:10px;">
+          <label>Saved Signature:</label>
+          <img id="witness-sig-img" class="sig-img" />
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn-outline" onclick="prevStep(5)">← Back</button>
+        <button class="btn-secondary" onclick="finalizeAgreement()" id="finalize-btn" disabled style="opacity:0.5;">🔒 Finalize Agreement</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AGREEMENT VIEW ===================== -->
+<div id="screen-view" class="screen">
+  <div class="header">
+    <button onclick="showScreen('screen-dashboard')" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">←</button>
+    <div>
+      <div class="logo-text" style="font-size:17px;">Agreement</div>
+      <div class="tagline">View & Download</div>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="card">
+      <div id="view-title" style="font-size:17px; font-weight:800; color:#1A4F9C; margin-bottom:4px;"></div>
+      <div id="view-ref" style="font-size:11px; color:#9ca3af; margin-bottom:10px;"></div>
+      <div id="view-status"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:8px;">📃 Agreement Document</div>
+      <div id="view-doc" class="agreement-preview"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:8px;">🔒 QR Verification Code</div>
+      <p style="font-size:12px; color:#6b7280; margin:0 0 10px;">Scan this QR code to verify the authenticity of this agreement.</p>
+      <div class="qr-container"><div id="view-qr"></div></div>
+      <p id="view-qr-text" style="font-size:11px; color:#6b7280; text-align:center; margin-top:8px;"></p>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:10px;">✍️ Signatures</div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <div>
+          <label>Seller</label>
+          <img id="view-seller-sig" class="sig-img" />
+        </div>
+        <div>
+          <label>Buyer</label>
+          <img id="view-buyer-sig" class="sig-img" />
+        </div>
+        <div id="view-witness-sig-wrap" class="hidden">
+          <label>Witness</label>
+          <img id="view-witness-sig" class="sig-img" />
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="downloadPDF()" style="margin-bottom:10px;">⬇️ Download PDF Agreement</button>
+    <button class="btn-outline" onclick="shareAgreement()">📤 Share via Telegram</button>
+  </div>
+</div>
+
+<!-- ===================== SETUP GUIDE MODAL ===================== -->
+<div id="modal-guide" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div style="font-size:18px; font-weight:800; color:#1A4F9C; margin-bottom:16px;">🚀 Setup & Hosting Guide</div>
+    <div style="font-size:13px; line-height:1.8; color:#374151;">
+
+      <div style="font-weight:700; color:#1A4F9C; margin-bottom:6px;">📱 Step 1: Create Telegram Bot</div>
+      <ol style="padding-left:18px; margin-bottom:16px;">
+        <li>Open Telegram and search <b>@BotFather</b></li>
+        <li>Send <code>/newbot</code></li>
+        <li>Enter your bot name: <b>ZamSign</b></li>
+        <li>Enter your bot username: <b>zamsign_bot</b></li>
+        <li>Copy the <b>BOT_TOKEN</b> provided</li>
+        <li>Send <code>/setmenubutton</code> → select your bot → set button URL to your hosted app URL</li>
+        <li>Send <code>/setdomain</code> → approve your GitHub Pages domain</li>
+      </ol>
+
+      <div style="font-weight:700; color:#22A06B; margin-bottom:6px;">💻 Step 2: Host on GitHub Pages</div>
+      <ol style="padding-left:18px; margin-bottom:16px;">
+        <li>Create a GitHub account at <b>github.com</b></li>
+        <li>Create a new repository: <b>zamsign-miniapp</b></li>
+        <li>Upload this <b>index.html</b> file to the repo root</li>
+        <li>Go to <b>Settings → Pages</b></li>
+        <li>Under <i>Source</i>, select <b>main branch</b> → Save</li>
+        <li>Your app URL will be: <b>https://yourusername.github.io/zamsign-miniapp</b></li>
+      </ol>
+
+      <div style="font-weight:700; color:#1A4F9C; margin-bottom:6px;">🔗 Step 3: Link Bot to Mini App</div>
+      <ol style="padding-left:18px; margin-bottom:16px;">
+        <li>In BotFather, send <code>/newapp</code></li>
+        <li>Select your bot</li>
+        <li>Enter app title: <b>ZamSign</b></li>
+        <li>Paste your GitHub Pages URL</li>
+        <li>Users can now open ZamSign from your bot</li>
+      </ol>
+
+      <div style="font-weight:700; color:#e53e3e; margin-bottom:6px;">⚙️ Environment Variables (Render.com)</div>
+      <div style="background:#f3f4f6; padding:10px; border-radius:8px; font-family:monospace; font-size:12px; margin-bottom:16px;">
+        BOT_TOKEN=your_bot_token<br/>
+        PORT=10000<br/>
+        RENDER=1<br/>
+        RENDER_EXTERNAL_URL=https://yourapp.onrender.com
+      </div>
+
+      <button class="btn-primary" onclick="closeGuide()">✅ Got It!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TOAST ===================== -->
+<div id="toast" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1A4F9C;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;display:none;"></div>
+
+<script>
+// ===================== STATE =====================
+let agreements = JSON.parse(localStorage.getItem('zamsign_agreements') || '[]');
+let currentAgreement = {};
+let currentStep = 1;
+let sellerSigData = null;
+let buyerSigData = null;
+let witnessSigData = null;
+let activeCanvas = null;
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+let viewingIndex = -1;
+
+// ===================== TELEGRAM INIT =====================
+if (window.Telegram && window.Telegram.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+
+// ===================== SCREEN NAV =====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'screen-dashboard') refreshDashboard();
+}
+
+function showTab(tab) {
+  showScreen('screen-dashboard');
+  refreshDashboard(tab);
+}
+
+// ===================== TOAST =====================
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', duration);
+}
+
+// ===================== DASHBOARD =====================
+function refreshDashboard(filter = 'all') {
+  const inbox = agreements.filter(a => a.role === 'buyer');
+  const outbox = agreements.filter(a => a.role === 'seller');
+  const progress = agreements.filter(a => a.status === 'in_progress');
+  const completed = agreements.filter(a => a.status === 'completed');
+
+  document.getElementById('inbox-count').textContent = inbox.length + ' agreements';
+  document.getElementById('outbox-count').textContent = outbox.length + ' agreements';
+  document.getElementById('progress-count').textContent = progress.length + ' agreements';
+  document.getElementById('completed-count').textContent = completed.length + ' agreements';
+
+  let list = agreements;
+  if (filter === 'inbox') list = inbox;
+  else if (filter === 'outbox') list = outbox;
+  else if (filter === 'progress') list = progress;
+  else if (filter === 'completed') list = completed;
+
+  const container = document.getElementById('dashboard-list');
+  if (list.length === 0) {
+    container.innerHTML = `<div class="card" style="text-align:center; color:#9ca3af; padding:30px;">
+      <div style="font-size:40px;">📋</div>
+      <div>No agreements yet.<br>Tap "+ New" to create one.</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((a, i) => {
+    const idx = agreements.indexOf(a);
+    const statusBadge = a.status === 'completed'
+      ? '<span class="badge badge-signed">✅ Completed</span>'
+      : a.status === 'in_progress'
+        ? '<span class="badge badge-progress">🔄 In Progress</span>'
+        : '<span class="badge badge-pending">⏳ Pending</span>';
+    return `<div class="card" onclick="viewAgreement(${idx})" style="cursor:pointer;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-weight:700; color:#111; font-size:15px; flex:1;">${a.title}</div>
+        ${statusBadge}
+      </div>
+      <div style="font-size:12px; color:#6b7280; margin-top:4px;">
+        ZMW ${Number(a.amount).toLocaleString()} · ${a.date}
+      </div>
+      <div style="font-size:12px; color:#9ca3af; margin-top:2px;">Ref: ${a.refId}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===================== STEP NAVIGATION =====================
+function nextStep(step) {
+  if (step === 1) {
+    const title = document.getElementById('ag-title').value.trim();
+    const amount = document.getElementById('ag-amount').value.trim();
+    const desc = document.getElementById('ag-desc').value.trim();
+    if (!title || !amount || !desc) { showToast('⚠️ Please fill all required fields.'); return; }
+  }
+  if (step === 2) {
+    const name = document.getElementById('seller-name').value.trim();
+    const nrc = document.getElementById('seller-nrc').value.trim();
+    const addr = document.getElementById('seller-address').value.trim();
+    if (!name || !nrc || !addr) { showToast('⚠️ Please fill all seller details.'); return; }
+  }
+  if (step === 3) {
+    const name = document.getElementById('buyer-name').value.trim();
+    const nrc = document.getElementById('buyer-nrc').value.trim();
+    const addr = document.getElementById('buyer-address').value.trim();
+    if (!name || !nrc || !addr) { showToast('⚠️ Please fill all buyer details.'); return; }
+    // Show witness sig card if witness provided
+    if (document.getElementById('witness-name').value.trim()) {
+      document.getElementById('witness-sig-card').classList.remove('hidden');
+    }
+  }
+
+  document.getElementById(`create-step-${step}`).classList.add('hidden');
+  document.getElementById(`create-step-${step + 1}`).classList.remove('hidden');
+  currentStep = step + 1;
+  document.getElementById('create-step-num').textContent = currentStep;
+  document.getElementById('create-progress').style.width = (currentStep * 20) + '%';
+
+  if (currentStep === 4) initCanvas('signatureCanvas', 'seller');
+  if (currentStep === 5) {
+    initCanvas('buyerSignatureCanvas', 'buyer');
+    if (document.getElementById('witness-name').value.trim()) {
+      initCanvas('witnessSignatureCanvas', 'witness');
+    }
+  }
+  window.scrollTo(0, 0);
+}
+
+function prevStep(step) {
+  document.getElementById(`create-step-${step}`).classList.add('hidden');
+  document.getElementById(`create-step-${step - 1}`).classList.remove('hidden');
+  currentStep = step - 1;
+  document.getElementById('create-step-num').textContent = currentStep;
+  document.getElementById('create-progress').style.width = (currentStep * 20) + '%';
+  window.scrollTo(0, 0);
+}
+
+// ===================== CANVAS / SIGNATURE =====================
+function initCanvas(canvasId, role) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#1A4F9C';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  }
+
+  canvas.onmousedown = canvas.ontouchstart = (e) => {
+    e.preventDefault();
+    isDrawing = true;
+    const pos = getPos(e);
+    lastX = pos.x; lastY = pos.y;
+    activeCanvas = canvasId;
+  };
+  canvas.onmousemove = canvas.ontouchmove = (e) => {
+    e.preventDefault();
+    if (!isDrawing || activeCanvas !== canvasId) return;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastX = pos.x; lastY = pos.y;
+  };
+  canvas.onmouseup = canvas.ontouchend = () => { isDrawing = false; };
+}
+
+function clearSignature(role) {
+  const ids = { seller: 'signatureCanvas', buyer: 'buyerSignatureCanvas', witness: 'witnessSignatureCanvas' };
+  const canvas = document.getElementById(ids[role]);
+  if (!canvas) return;
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  if (role === 'seller') {
+    sellerSigData = null;
+    document.getElementById('seller-sig-preview').classList.add('hidden');
+    document.getElementById('seller-sig-next-btn').disabled = true;
+    document.getElementById('seller-sig-next-btn').style.opacity = '0.5';
+  } else if (role === 'buyer') {
+    buyerSigData = null;
+    document.getElementById('buyer-sig-preview').classList.add('hidden');
+    checkFinalizeBtn();
+  } else {
+    witnessSigData = null;
+    document.getElementById('witness-sig-preview').classList.add('hidden');
+  }
+}
+
+function saveSignature(role) {
+  const ids = { seller: 'signatureCanvas', buyer: 'buyerSignatureCanvas', witness: 'witnessSignatureCanvas' };
+  const canvas = document.getElementById(ids[role]);
+  if (!canvas) return;
+  const data = canvas.toDataURL('image/png');
+  if (role === 'seller') {
+    sellerSigData = data;
+    document.getElementById('seller-sig-img').src = data;
+    document.getElementById('seller-sig-preview').classList.remove('hidden');
+    document.getElementById('seller-sig-next-btn').disabled = false;
+    document.getElementById('seller-sig-next-btn').style.opacity = '1';
+    showToast('✅ Seller signature saved!');
+  } else if (role === 'buyer') {
+    buyerSigData = data;
+    document.getElementById('buyer-sig-img').src = data;
+    document.getElementById('buyer-sig-preview').classList.remove('hidden');
+    checkFinalizeBtn();
+    showToast('✅ Buyer signature saved!');
+  } else {
+    witnessSigData = data;
+    document.getElementById('witness-sig-img').src = data;
+    document.getElementById('witness-sig-preview').classList.remove('hidden');
+    showToast('✅ Witness signature saved!');
+  }
+}
+
+function checkFinalizeBtn() {
+  const btn = document.getElementById('finalize-btn');
+  const witnessNeeded = !document.getElementById('witness-sig-card').classList.contains('hidden');
+  const ok = buyerSigData && (!witnessNeeded || witnessSigData);
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.5';
+}
+
+// ===================== FINALIZE =====================
+function finalizeAgreement() {
+  const now = new Date();
+  const dateStr = now.toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'medium' });
+  const refId = 'ZS-' + now.getTime().toString().slice(-10);
+
+  const agreement = {
+    refId,
+    title: document.getElementById('ag-title').value.trim(),
+    amount: document.getElementById('ag-amount').value.trim(),
+    description: document.getElementById('ag-desc').value.trim(),
+    date: dateStr,
+    seller: {
+      name: document.getElementById('seller-name').value.trim(),
+      nrc: document.getElementById('seller-nrc').value.trim(),
+      address: document.getElementById('seller-address').value.trim(),
+      username: document.getElementById('seller-username').value.trim(),
+    },
+    buyer: {
+      name: document.getElementById('buyer-name').value.trim(),
+      nrc: document.getElementById('buyer-nrc').value.trim(),
+      address: document.getElementById('buyer-address').value.trim(),
+      username: document.getElementById('buyer-username').value.trim(),
+    },
+    witness: {
+      name: document.getElementById('witness-name').value.trim(),
+      nrc: document.getElementById('witness-nrc').value.trim(),
+      address: document.getElementById('witness-address').value.trim(),
+    },
+    sellerSig: sellerSigData,
+    buyerSig: buyerSigData,
+    witnessSig: witnessSigData,
+    status: 'completed',
+    role: 'seller',
+  };
+
+  agreements.push(agreement);
+  localStorage.setItem('zamsign_agreements', JSON.stringify(agreements));
+
+  // Reset
+  sellerSigData = null; buyerSigData = null; witnessSigData = null;
+  currentStep = 1;
+  document.querySelectorAll('#screen-create input, #screen-create textarea').forEach(el => el.value = '');
+
+  showToast('🎉 Agreement finalized!', 3000);
+  viewAgreement(agreements.length - 1);
+}
+
+// ===================== VIEW AGREEMENT =====================
+function viewAgreement(index) {
+  viewingIndex = index;
+  const a = agreements[index];
+
+  document.getElementById('view-title').textContent = a.title;
+  document.getElementById('view-ref').textContent = 'Reference: ' + a.refId;
+  document.getElementById('view-status').innerHTML =
+    a.status === 'completed'
+      ? '<span class="badge badge-signed">✅ Completed</span>'
+      : '<span class="badge badge-progress">🔄 In Progress</span>';
+
+  const hasWitness = a.witness && a.witness.name;
+  const docText = buildDocumentText(a);
+  document.getElementById('view-doc').textContent = docText;
+
+  document.getElementById('view-seller-sig').src = a.sellerSig || '';
+  document.getElementById('view-buyer-sig').src = a.buyerSig || '';
+  if (hasWitness && a.witnessSig) {
+    document.getElementById('view-witness-sig-wrap').classList.remove('hidden');
+    document.getElementById('view-witness-sig').src = a.witnessSig;
+  } else {
+    document.getElementById('view-witness-sig-wrap').classList.add('hidden');
+  }
+
+  // QR Code
+  const qrContainer = document.getElementById('view-qr');
+  qrContainer.innerHTML = '';
+  const verifyText = `This certifies that a transaction titled "${a.title}" between ${a.seller.name} and ${a.buyer.name} was completed on ${a.date} using the ZamSign Digital Agreement Platform. Reference: ${a.refId}`;
+  document.getElementById('view-qr-text').textContent = verifyText;
+  new QRCode(qrContainer, {
+    text: verifyText,
+    width: 160, height: 160,
+    colorDark: '#1A4F9C',
+    colorLight: '#ffffff',
+  });
+
+  showScreen('screen-view');
+}
+
+function buildDocumentText(a) {
+  const hasWitness = a.witness && a.witness.name;
+  return `SALE AND PURCHASE AGREEMENT
+═══════════════════════════════════════
+
+THIS AGREEMENT
+
+This is an Agreement of Sale made on this ${a.date}, between the following parties:
+
+─────────────────────────────────────
+1. PARTIES
+─────────────────────────────────────
+
+SELLER
+Full Name:          ${a.seller.name}
+NRC Number:         ${a.seller.nrc}
+Residential Address:${a.seller.address}
+
+BUYER
+Full Name:          ${a.buyer.name}
+NRC Number:         ${a.buyer.nrc}
+Residential Address:${a.buyer.address}
+${hasWitness ? `
+WITNESS
+Full Name:          ${a.witness.name}
+NRC Number:         ${a.witness.nrc}
+Residential Address:${a.witness.address}` : ''}
+
+─────────────────────────────────────
+2. AGREEMENT TITLE
+─────────────────────────────────────
+${a.title}
+
+─────────────────────────────────────
+3. DESCRIPTION OF ITEM / CONDITIONS
+─────────────────────────────────────
+The Seller agrees to sell, and the Buyer agrees to purchase the item(s) under the terms below:
+
+${a.description}
+
+─────────────────────────────────────
+4. PURCHASE PRICE
+─────────────────────────────────────
+Amount: ZMW ${Number(a.amount).toLocaleString()}
+
+─────────────────────────────────────
+5. TERMS AND CONDITIONS
+─────────────────────────────────────
+1. Seller confirms rightful ownership.
+2. Buyer accepts item condition.
+3. Transaction final upon payment.
+4. Additional conditions as stated above.
+
+─────────────────────────────────────
+6. BILL OF SALE CONFIRMATION
+─────────────────────────────────────
+The parties signed a Bill of Sale for the item(s) being bought and sold.
+
+─────────────────────────────────────
+7. DECLARATION
+─────────────────────────────────────
+Both parties confirm agreement and accuracy of information provided in this document.
+
+─────────────────────────────────────
+8. SIGNATURES
+─────────────────────────────────────
+Seller Signature:  [See attached digital signature]
+Buyer Signature:   [See attached digital signature]
+${hasWitness ? 'Witness Signature: [See attached digital signature]' : ''}
+
+─────────────────────────────────────
+9. VERIFICATION
+─────────────────────────────────────
+This document was generated via ZamSign.
+Scan the QR code to verify authenticity.
+
+Agreement Reference: ${a.refId}
+Generated: ${a.date}
+Platform: ZamSign Digital Agreement Platform
+═══════════════════════════════════════`;
+}
+
+// ===================== PDF DOWNLOAD =====================
+async function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const a = agreements[viewingIndex];
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const margin = 20;
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  let y = margin;
+
+  // Header
+  doc.setFillColor(26, 79, 156);
+  doc.rect(0, 0, pageW, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ZAMSIGN', margin, 14);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Digital Agreement Platform · Sign. Agree. Trust.', margin, 21);
+  doc.text('Ref: ' + a.refId, pageW - margin, 21, { align: 'right' });
+
+  y = 40;
+  doc.setTextColor(0, 0, 0);
+
+  // Title
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SALE AND PURCHASE AGREEMENT', pageW / 2, y, { align: 'center' });
+  y += 8;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text('This is an Agreement of Sale made on ' + a.date, pageW / 2, y, { align: 'center' });
+  y += 10;
+
+  doc.setTextColor(0, 0, 0);
+
+  function section(title) {
+    doc.setFillColor(26, 79, 156);
+    doc.rect(margin, y, pageW - margin * 2, 6, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, margin + 3, y + 4.2);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    y += 9;
+  }
+
+  function row(label, value) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(label + ':', margin + 2, y);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(value || 'N/A', pageW - margin * 2 - 45);
+    doc.text(lines, margin + 45, y);
+    y += lines.length * 5 + 1;
+  }
+
+  function checkPage() {
+    if (y > pageH - 40) { doc.addPage(); y = 20; }
+  }
+
+  // Parties
+  section('1. PARTIES');
+  doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.text('SELLER', margin + 2, y); y += 5;
+  doc.setFont('helvetica', 'normal');
+  row('Full Name', a.seller.name);
+  row('NRC Number', a.seller.nrc);
+  row('Address', a.seller.address);
+  y += 3;
+  doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.text('BUYER', margin + 2, y); y += 5;
+  doc.setFont('helvetica', 'normal');
+  row('Full Name', a.buyer.name);
+  row('NRC Number', a.buyer.nrc);
+  row('Address', a.buyer.address);
+
+  if (a.witness && a.witness.name) {
+    y += 3;
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+    doc.text('WITNESS', margin + 2, y); y += 5;
+    doc.setFont('helvetica', 'normal');
+    row('Full Name', a.witness.name);
+    row('NRC Number', a.witness.nrc);
+    row('Address', a.witness.address);
+  }
+
+  y += 4; checkPage();
+  section('2. AGREEMENT TITLE');
+  doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.text(a.title, margin + 2, y); y += 8;
+
+  checkPage();
+  section('3. DESCRIPTION OF ITEM / CONDITIONS');
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  const descLines = doc.splitTextToSize('The Seller agrees to sell, and the Buyer agrees to purchase the item(s) under the terms below:\n\n' + a.description, pageW - margin * 2 - 4);
+  doc.text(descLines, margin + 2, y);
+  y += descLines.length * 5 + 4;
+
+  checkPage();
+  section('4. PURCHASE PRICE');
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+  doc.setTextColor(26, 79, 156);
+  doc.text('Amount: ZMW ' + Number(a.amount).toLocaleString(), margin + 2, y);
+  doc.setTextColor(0, 0, 0); y += 8;
+
+  checkPage();
+  section('5. TERMS AND CONDITIONS');
+  ['1. Seller confirms rightful ownership.', '2. Buyer accepts item condition.', '3. Transaction final upon payment.', '4. Additional conditions as stated above.'].forEach(t => {
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(t, margin + 2, y); y += 5;
+  });
+  y += 3;
+
+  checkPage();
+  section('6. BILL OF SALE CONFIRMATION');
+  doc.setFontSize(9);
+  doc.text('The parties signed a Bill of Sale for the item(s) being bought and sold.', margin + 2, y);
+  y += 8;
+
+  section('7. DECLARATION');
+  doc.setFontSize(9);
+  doc.text('Both parties confirm agreement and accuracy of information provided in this document.', margin + 2, y);
+  y += 10;
+
+  checkPage();
+  section('8. SIGNATURES');
+  const sigY = y;
+  if (a.sellerSig) {
+    doc.setFontSize(8); doc.text('Seller Signature:', margin + 2, y);
+    doc.addImage(a.sellerSig, 'PNG', margin + 2, y + 2, 55, 20);
+  }
+  if (a.buyerSig) {
+    doc.setFontSize(8); doc.text('Buyer Signature:', margin + 70, sigY);
+    doc.addImage(a.buyerSig, 'PNG', margin + 70, sigY + 2, 55, 20);
+  }
+  y = sigY + 28;
+  if (a.witness && a.witness.name && a.witnessSig) {
+    doc.setFontSize(8); doc.text('Witness Signature:', margin + 2, y);
+    doc.addImage(a.witnessSig, 'PNG', margin + 2, y + 2, 55, 20);
+    y += 28;
+  }
+
+  checkPage();
+  section('9. VERIFICATION – QR CODE');
+  doc.setFontSize(8);
+  doc.text('This document was generated via ZamSign. Scan QR code to verify authenticity.', margin + 2, y);
+  y += 5;
+
+  // QR code via canvas
+  const qrCanvas = document.querySelector('#view-qr canvas');
+  if (qrCanvas) {
+    const qrData = qrCanvas.toDataURL('image/png');
+    doc.addImage(qrData, 'PNG', margin + 2, y, 40, 40);
+    doc.setFontSize(7); doc.setTextColor(100);
+    const qrText = doc.splitTextToSize(`Reference: ${a.refId} | Date: ${a.date}`, pageW - margin * 2 - 50);
+    doc.text(qrText, margin + 46, y + 5);
+    y += 45;
+  }
+
+  // Footer
+  doc.setFillColor(242, 244, 247);
+  doc.rect(0, pageH - 15, pageW, 15, 'F');
+  doc.setTextColor(100);
+  doc.setFontSize(8);
+  doc.text('ZamSign · Digital Agreements Made Simple · Africa\'s Digital Agreement Platform', pageW / 2, pageH - 7, { align: 'center' });
+
+  doc.save(`ZamSign_Agreement_${a.refId}.pdf`);
+  showToast('📄 PDF downloaded!');
+}
+
+// ===================== SHARE =====================
+function shareAgreement() {
+  const a = agreements[viewingIndex];
+  const text = `📋 *ZamSign Agreement*\n\n*${a.title}*\nAmount: ZMW ${Number(a.amount).toLocaleString()}\nBetween: ${a.seller.name} & ${a.buyer.name}\nDate: ${a.date}\nRef: ${a.refId}\n\n_Verified via ZamSign Digital Agreement Platform_`;
+  if (window.Telegram && window.Telegram.WebApp) {
+    Telegram.WebApp.switchInlineQuery(text);
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard!'));
+  }
+}
+
+function closeGuide() {
+  document.getElementById('modal-guide').classList.add('hidden');
+}
+
+// Show guide on first load
+if (!localStorage.getItem('zamsign_guided')) {
+  setTimeout(() => {
+    document.getElementById('modal-guide').classList.remove('hidden');
+    localStorage.setItem('zamsign_guided', '1');
+  }, 800);
+}
+
+// Init dashboard
+refreshDashboard();
+</script>
+</body>
+</html>
