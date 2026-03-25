@@ -16,6 +16,12 @@ var viewingIndex = -1;
 if (window.Telegram && window.Telegram.WebApp) {
   Telegram.WebApp.ready();
   Telegram.WebApp.expand();
+  console.log("Telegram has initialized")
+  //Telegram.WebApp.showAlert("")
+  Telegram.WebApp.BackButton.show()
+  Telegram.WebApp.MainButton.show()
+  Telegram.WebApp.SecondaryButton.show()
+  Telegram.WebApp.SettingsButton.show()
 }
 
 // ===================== SCREEN NAV =====================
@@ -24,7 +30,20 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   if (id === 'screen-dashboard') refreshDashboard();
 }
-
+ function showPopup() {
+            Telegram.WebApp.showPopup({
+                title: 'Title',
+                message: 'Some message',
+                buttons: [
+                    {id: 'link', type: 'default', text: 'Open ton.org'},
+                    {type: 'cancel'},
+                ]
+            }, function(btn) {
+                if (btn === 'link') {
+                    Telegram.WebApp.openLink('https://ton.org/');
+                }
+            });
+        };
 function showTab(tab) {
   showScreen('screen-dashboard');
   refreshDashboard(tab);
