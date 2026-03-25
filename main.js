@@ -1,15 +1,15 @@
 
 // ===================== STATE =====================
-let agreements = JSON.parse(localStorage.getItem('zamsign_agreements') || '[]');
-let currentAgreement = {};
-let currentStep = 1;
-let sellerSigData = null;
-let buyerSigData = null;
-let witnessSigData = null;
-let activeCanvas = null;
-let isDrawing = false;
-let lastX = 0, lastY = 0;
-let viewingIndex = -1;
+var agreements = JSON.parse(localStorage.getItem('zamsign_agreements') || '[]');
+var currentAgreement = {};
+var currentStep = 1;
+var sellerSigData = null;
+var buyerSigData = null;
+var witnessSigData = null;
+var activeCanvas = null;
+var isDrawing = false;
+var lastX = 0, lastY = 0;
+var viewingIndex = -1;
 
 // ===================== TELEGRAM INIT =====================
 if (window.Telegram && window.Telegram.WebApp) {
