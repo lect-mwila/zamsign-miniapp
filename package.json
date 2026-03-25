@@ -15,11 +15,16 @@
     "check": "biome check"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.1",
     "cross-env": "^10.1.0",
     "typescript": "^5.7.2",
-    "vite": "^7.3.1",
+    "vite": "^8.0.2",
     "vite-plugin-mkcert": "^1.17.10",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.5"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   }
 }

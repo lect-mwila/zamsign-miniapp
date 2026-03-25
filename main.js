@@ -8,7 +8,8 @@ var buyerSigData = null;
 var witnessSigData = null;
 var activeCanvas = null;
 var isDrawing = false;
-var lastX = 0, lastY = 0;
+var lastX = 0;
+var lastY = 0;
 var viewingIndex = -1;
 
 // ===================== TELEGRAM INIT =====================
