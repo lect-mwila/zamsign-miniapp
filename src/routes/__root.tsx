@@ -26,9 +26,7 @@ export const Route = createRootRouteWithContext<TelegramContext>()({
       }
     }
     try {
-    if (import.meta.env.DEV) {
       await import('../mockEnv.ts');
-    }
 		
       const lp = retrieveLaunchParams();
       
