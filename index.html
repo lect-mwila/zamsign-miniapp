@@ -176,56 +176,7 @@
   </div>
 </div>
 
-<!-- ===================== AGREEMENT VIEW ===================== -->
-<div id="screen-view" class="screen">
-  <div class="header">
-    <button onclick="showScreen('screen-dashboard')" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">←</button>
-    <div>
-      <div class="logo-text" style="font-size:17px;">Agreement</div>
-      <div class="tagline">View & Download</div>
-    </div>
-  </div>
-  <div class="content-area">
-    <div class="card">
-      <div id="view-title" style="font-size:17px; font-weight:800; color:#1A4F9C; margin-bottom:4px;"></div>
-      <div id="view-ref" style="font-size:11px; color:#9ca3af; margin-bottom:10px;"></div>
-      <div id="view-status"></div>
-    </div>
 
-    <div class="card">
-      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:8px;">📃 Agreement Document</div>
-      <div id="view-doc" class="agreement-preview"></div>
-    </div>
-
-    <div class="card">
-      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:8px;">🔒 QR Verification Code</div>
-      <p style="font-size:12px; color:#6b7280; margin:0 0 10px;">Scan this QR code to verify the authenticity of this agreement.</p>
-      <div class="qr-container"><div id="view-qr"></div></div>
-      <p id="view-qr-text" style="font-size:11px; color:#6b7280; text-align:center; margin-top:8px;"></p>
-    </div>
-
-    <div class="card">
-      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:10px;">✍️ Signatures</div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <div>
-          <label>Seller</label>
-          <img id="view-seller-sig" class="sig-img" />
-        </div>
-        <div>
-          <label>Buyer</label>
-          <img id="view-buyer-sig" class="sig-img" />
-        </div>
-        <div id="view-witness-sig-wrap" class="hidden">
-          <label>Witness</label>
-          <img id="view-witness-sig" class="sig-img" />
-        </div>
-      </div>
-    </div>
-
-    <button class="btn-primary" onclick="downloadPDF()" style="margin-bottom:10px;">⬇️ Download PDF Agreement</button>
-    <button class="btn-outline" onclick="shareAgreement()">📤 Share via Telegram</button>
-  </div>
-</div>
 
 <!-- ===================== SETUP GUIDE MODAL ===================== -->
 <div id="modal-guide" class="modal-overlay hidden">
@@ -278,7 +229,6 @@
 
 <!-- ===================== TOAST ===================== -->
 <div id="toast" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1A4F9C;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;display:none;"></div>
-	<script type="module" src="./main.js"></script>
 	<script type="module" src="./src/index.tsx"></script>
 
 </body>
