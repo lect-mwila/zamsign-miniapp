@@ -1,4 +1,4 @@
-import { createRootRoute } from '@tanstack/react-router'
+import { createRootRouteWithContext } from '@tanstack/react-router'
 import { retrieveLaunchParams } from '@tma.js/sdk-react'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -13,7 +13,7 @@ import { init as initTMA } from '@/init.ts'
 
 let isTmaInitialized = false;
 
-export const Route = createRootRoute()({
+export const Route = createRootRouteWithContext<TelegramContext>()({
 	// beforeLoad: async () => {
     // if (typeof window === 'undefined') return { launchParams: undefined };
 
@@ -32,6 +32,7 @@ export const Route = createRootRoute()({
 		
       // const lp = retrieveLaunchParams();
       
+      // Initialize TMA logic
       // await initTMA({
         // debug: import.meta.env.DEV,
         // eruda: false,
@@ -41,6 +42,8 @@ export const Route = createRootRoute()({
 	  // isTmaInitialized = true;
       // return { launchParams: lp };
     // } catch (e: any) {
+      // If it's just a CSS binding error, we can actually ignore it 
+      // and proceed because the app is otherwise functional.
       // if (e?.name === 'CSSVarsBoundError') {
         // return { launchParams: retrieveLaunchParams() };
       // }
