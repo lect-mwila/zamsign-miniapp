@@ -70,7 +70,7 @@ export const Route = createRootRouteWithContext<TelegramContext>()({
   errorComponent: ({ error }) => {
     return <p>Environment Unsupported{JSON.stringify(error)}</p>
     },
-  notFoundComponent: RootComponen,
+  notFoundComponent: RootComponent,
 })
 
 function RootComponent({ children }: { children: React.ReactNode }) {
