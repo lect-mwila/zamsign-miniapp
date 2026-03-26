@@ -1,0 +1,36 @@
+{
+  "name": "zamsign",
+  "version": "0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:https": "cross-env HTTPS=true vite",
+    "dev:remote": "cross-env HTTPS=true REMOTE=true vite",
+    "dev": "vite dev",
+    "build": "cross-env GH=true vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "format": "biome format",
+    "lint": "biome lint",
+    "check": "biome check"
+  },
+  "devDependencies": {
+    "@tanstack/router-plugin": "^1.167.5",
+    "@vitejs/plugin-react": "^6.0.1",
+    "cross-env": "^10.1.0",
+    "typescript": "^5.7.2",
+    "vite": "^8.0.2",
+    "vite-plugin-mkcert": "^1.17.10",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.5"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
+    "@tanstack/react-router": "^1.168.4",
+    "@tanstack/react-router-devtools": "^1.166.11",
+    "@tma.js/sdk-react": "^3.0.16",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.2.2"
+  }
+}
