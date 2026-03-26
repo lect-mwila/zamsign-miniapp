@@ -32,7 +32,6 @@ export const Route = createRootRoute()({
 		
       // const lp = retrieveLaunchParams();
       
-      Initialize TMA logic
       // await initTMA({
         // debug: import.meta.env.DEV,
         // eruda: false,
@@ -42,8 +41,6 @@ export const Route = createRootRoute()({
 	  // isTmaInitialized = true;
       // return { launchParams: lp };
     // } catch (e: any) {
-      If it's just a CSS binding error, we can actually ignore it 
-      and proceed because the app is otherwise functional.
       // if (e?.name === 'CSSVarsBoundError') {
         // return { launchParams: retrieveLaunchParams() };
       // }
