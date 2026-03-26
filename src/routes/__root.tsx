@@ -1,4 +1,4 @@
-import { createRootRouteWithContext } from '@tanstack/react-router'
+import { createRootRoute } from '@tanstack/react-router'
 import { retrieveLaunchParams } from '@tma.js/sdk-react'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -13,59 +13,59 @@ import { init as initTMA } from '@/init.ts'
 
 let isTmaInitialized = false;
 
-export const Route = createRootRouteWithContext<TelegramContext>()({
-	beforeLoad: async () => {
-    if (typeof window === 'undefined') return { launchParams: undefined };
+export const Route = createRootRoute()({
+	// beforeLoad: async () => {
+    // if (typeof window === 'undefined') return { launchParams: undefined };
 
 	
-	if (isTmaInitialized) {
-      try {
-        return { launchParams: retrieveLaunchParams() };
-      } catch {
-        return { launchParams: undefined };
-      }
-    }
-    try {
-    if (import.meta.env.DEV) {
-      await import('../mockEnv.ts');
-    }
+	// if (isTmaInitialized) {
+      // try {
+        // return { launchParams: retrieveLaunchParams() };
+      // } catch {
+        // return { launchParams: undefined };
+      // }
+    // }
+    // try {
+    // if (import.meta.env.DEV) {
+      // await import('../mockEnv.ts');
+    // }
 		
-      const lp = retrieveLaunchParams();
+      // const lp = retrieveLaunchParams();
       
-      // Initialize TMA logic
-      await initTMA({
-        debug: import.meta.env.DEV,
-        eruda: false,
-        mockForMacOS: lp.tgWebAppPlatform === 'macos',
-      });
+      Initialize TMA logic
+      // await initTMA({
+        // debug: import.meta.env.DEV,
+        // eruda: false,
+        // mockForMacOS: lp.tgWebAppPlatform === 'macos',
+      // });
 	  
-	  isTmaInitialized = true;
-      return { launchParams: lp };
-    } catch (e: any) {
-      // If it's just a CSS binding error, we can actually ignore it 
-      // and proceed because the app is otherwise functional.
-      if (e?.name === 'CSSVarsBoundError') {
-        return { launchParams: retrieveLaunchParams() };
-      }
+	  // isTmaInitialized = true;
+      // return { launchParams: lp };
+    // } catch (e: any) {
+      If it's just a CSS binding error, we can actually ignore it 
+      and proceed because the app is otherwise functional.
+      // if (e?.name === 'CSSVarsBoundError') {
+        // return { launchParams: retrieveLaunchParams() };
+      // }
 
-      console.error("TMA Init failed", e);
-      throw e; // Let errorComponent handle real failures
-    }
-  },
-  head: () => ({
-    meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: 'Invoice AI',
-      },
-    ]
-  }),
+      // console.error("TMA Init failed", e);
+      // throw e; // Let errorComponent handle real failures
+    // }
+  // },
+  // head: () => ({
+    // meta: [
+      // {
+        // charSet: 'utf-8',
+      // },
+      // {
+        // name: 'viewport',
+        // content: 'width=device-width, initial-scale=1',
+      // },
+      // {
+        // title: 'Invoice AI',
+      // },
+    // ]
+  // }),
   shellComponent: RootComponent,
   errorComponent: ({ error }) => {
     return <p>Environment Unsupported{JSON.stringify(error)}</p>
