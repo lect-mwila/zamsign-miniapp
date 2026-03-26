@@ -1,17 +1,11 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import { createRootRouteWithContext } from '@tanstack/react-router'
 import { retrieveLaunchParams } from '@tma.js/sdk-react'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import Footer from '../components/Footer'
-import Header from '../components/Header'
-import BottomBar from '../components/BottomBar'
-import type { TelegramContext } from '../router' // Import the interface
-import appCss from '../styles.css?url'
-import { init as initTMA } from '../init.ts'
-import { JazzReactProvider } from 'jazz-tools/react'
-import { MyAppAccount } from '../schema.ts'
 
-const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'light';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`
+import type { TelegramContext } from '@/router' // Import the interface
+import '../style.css'
+import { init as initTMA } from '@/init.ts'
 
 // Global TMA INIT Variable
 // We need this to prevent the telegram sdk from initializing
@@ -70,13 +64,7 @@ export const Route = createRootRouteWithContext<TelegramContext>()({
       {
         title: 'Invoice AI',
       },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-    ],
+    ]
   }),
   shellComponent: RootComponent,
   errorComponent: ({ error }) => {
@@ -90,12 +78,9 @@ export const Route = createRootRouteWithContext<TelegramContext>()({
 function RootComponent({ children }: { children: React.ReactNode }) {
   return (
     <RootDocument>
-        <Header />
-        <JazzWrapper>
-    		  <div className="min-h-screen"> 
+    	<div className="min-h-screen"> 
             {children}
-          </div>
-        </JazzWrapper>
+        </div>
         {/*<Footer />*/}
 		{/*<BottomBar />*/}
     </RootDocument>
@@ -104,12 +89,7 @@ function RootComponent({ children }: { children: React.ReactNode }) {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <HeadContent />
-      </head>
-      <body className="font-sans antialiased h-full selection:bg-[rgba(79,184,178,0.24)]">
+	<>
         {children}
 		  <TanStackDevtools
           config={{
@@ -122,20 +102,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             },
           ]}
         />
-        <Scripts />
-      </body>
-    </html>
+		</>
   )
 }
 
-
-export function JazzWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <JazzReactProvider
-          sync={{peer: `wss://cloud.jazz.tools/?key=${import.meta.env.JAZZ_API_KEY}`}}
-          AccountSchema={MyAppAccount}
-        >
-      {children}
-    </JazzReactProvider>
-  );
-}

@@ -1,10 +1,10 @@
 import { createFileRoute, useRouteContext} from '@tanstack/react-router'
 
-export const Route = createFileRoute('/about')({
-  component: About,
+export const Route = createFileRoute('/agreements/$agreementId/')({
+  component: Agreement,
 })
 
-function About() {
+function Agreement() {
   const { launchParams } = useRouteContext({ from: '__root__' })
   const user = launchParams?.tgWebAppData?.user
 

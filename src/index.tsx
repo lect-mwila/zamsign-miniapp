@@ -1,13 +1,18 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
+import React, { StrictMode } from 'react'
+import ReactDOM from 'react-dom/client'
+import { RouterProvider } from '@tanstack/react-router'
+import { getRouter } from './router'
+import { routeTree } from './routeTree.gen'
 
 // --- Render App ---
-const container = document.getElementById('root')
-const root = createRoot(container)
-
-root.render(
-<div className="w-full h-64 bg-black">
-	<h1>Hello React</h1>
-</div>
-)
+const router = getRouter()
+const rootElement = document.getElementById('root')!
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement)
+  root.render(
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>,
+  )
+}
 

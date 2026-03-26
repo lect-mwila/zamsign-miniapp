@@ -4,19 +4,20 @@ import mkcert from 'vite-plugin-mkcert';
 import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
-// import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 
 const config = defineConfig({
   base: process.env.GH ? '/zamsign-miniapp/': '/',
+  resolve:{
+	  tsconfigPaths: true
+    // tsconfigPaths({ projects: ['./tsconfig.json'] }),
+  },
   plugins: [
-    tsconfigPaths({ projects: ['./tsconfig.json'] }),
     process.env.HTTPS && mkcert(),
-	/**
 	 tanstackRouter({
       target: 'react',
       autoCodeSplitting: true,
     }),
-  **/
   ],
    server: process.env.REMOTE ? {
      host: 'zamsign.com',

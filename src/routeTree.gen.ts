@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgreementsIndexRouteImport } from './routes/agreements/index'
+import { Route as AgreementsCreateRouteImport } from './routes/agreements/create'
+import { Route as AgreementsAgreementIdIndexRouteImport } from './routes/agreements/$agreementId/index'
+import { Route as AgreementsAgreementIdEditRouteImport } from './routes/agreements/$agreementId/edit'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -22,31 +26,88 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgreementsIndexRoute = AgreementsIndexRouteImport.update({
+  id: '/agreements/',
+  path: '/agreements/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgreementsCreateRoute = AgreementsCreateRouteImport.update({
+  id: '/agreements/create',
+  path: '/agreements/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgreementsAgreementIdIndexRoute =
+  AgreementsAgreementIdIndexRouteImport.update({
+    id: '/agreements/$agreementId/',
+    path: '/agreements/$agreementId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AgreementsAgreementIdEditRoute =
+  AgreementsAgreementIdEditRouteImport.update({
+    id: '/agreements/$agreementId/edit',
+    path: '/agreements/$agreementId/edit',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/agreements/create': typeof AgreementsCreateRoute
+  '/agreements/': typeof AgreementsIndexRoute
+  '/agreements/$agreementId/edit': typeof AgreementsAgreementIdEditRoute
+  '/agreements/$agreementId/': typeof AgreementsAgreementIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/agreements/create': typeof AgreementsCreateRoute
+  '/agreements': typeof AgreementsIndexRoute
+  '/agreements/$agreementId/edit': typeof AgreementsAgreementIdEditRoute
+  '/agreements/$agreementId': typeof AgreementsAgreementIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/agreements/create': typeof AgreementsCreateRoute
+  '/agreements/': typeof AgreementsIndexRoute
+  '/agreements/$agreementId/edit': typeof AgreementsAgreementIdEditRoute
+  '/agreements/$agreementId/': typeof AgreementsAgreementIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/agreements/create'
+    | '/agreements/'
+    | '/agreements/$agreementId/edit'
+    | '/agreements/$agreementId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to:
+    | '/'
+    | '/about'
+    | '/agreements/create'
+    | '/agreements'
+    | '/agreements/$agreementId/edit'
+    | '/agreements/$agreementId'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/agreements/create'
+    | '/agreements/'
+    | '/agreements/$agreementId/edit'
+    | '/agreements/$agreementId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AgreementsCreateRoute: typeof AgreementsCreateRoute
+  AgreementsIndexRoute: typeof AgreementsIndexRoute
+  AgreementsAgreementIdEditRoute: typeof AgreementsAgreementIdEditRoute
+  AgreementsAgreementIdIndexRoute: typeof AgreementsAgreementIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,22 +126,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agreements/': {
+      id: '/agreements/'
+      path: '/agreements'
+      fullPath: '/agreements/'
+      preLoaderRoute: typeof AgreementsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agreements/create': {
+      id: '/agreements/create'
+      path: '/agreements/create'
+      fullPath: '/agreements/create'
+      preLoaderRoute: typeof AgreementsCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agreements/$agreementId/': {
+      id: '/agreements/$agreementId/'
+      path: '/agreements/$agreementId'
+      fullPath: '/agreements/$agreementId/'
+      preLoaderRoute: typeof AgreementsAgreementIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agreements/$agreementId/edit': {
+      id: '/agreements/$agreementId/edit'
+      path: '/agreements/$agreementId/edit'
+      fullPath: '/agreements/$agreementId/edit'
+      preLoaderRoute: typeof AgreementsAgreementIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AgreementsCreateRoute: AgreementsCreateRoute,
+  AgreementsIndexRoute: AgreementsIndexRoute,
+  AgreementsAgreementIdEditRoute: AgreementsAgreementIdEditRoute,
+  AgreementsAgreementIdIndexRoute: AgreementsAgreementIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
