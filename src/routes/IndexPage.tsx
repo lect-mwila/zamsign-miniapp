@@ -1,14 +1,9 @@
-import { createFileRoute, useRouteContext, Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 
-export const Route = createFileRoute('/')({
-  component: App,
-});
 
-function App() {
-  const { launchParams } = useRouteContext({ from: '__root__' });
+export default function IndexPage() {
   const navigate = useNavigate()
-  const invoiceId = launchParams?.tgWebAppStartParam || 'co_z9nJQ6bJUN3tV8DvHuQZiyHJdAN';
 
   // State
   const [agreements, setAgreements] = useState<any[]>([]);
@@ -28,16 +23,16 @@ function App() {
   }, [agreements]);
 
   // Telegram WebApp init
-  useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.expand();
-      tg.BackButton.show();
-      tg.MainButton.show();
-      // You can add more Telegram features here
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (window.Telegram?.WebApp) {
+  //     const tg = window.Telegram.WebApp;
+  //     tg.ready();
+  //     tg.expand();
+  //     tg.BackButton.show();
+  //     tg.MainButton.show();
+  //     // You can add more Telegram features here
+  //   }
+  // }, []);
 
   const showScreen = (screen: 'dashboard' | 'create' | 'view') => {
     setCurrentScreen(screen);
@@ -83,7 +78,8 @@ function App() {
 			  <button 
                 className="btn-primary" 
                 style={{ marginTop: '16px', background: 'white', color: '#1A4F9C' }}
-				onClick={() => navigate({to: '/agreements/create'})}
+				onClick={() => navigate('/agreements/create')}
+
 			  >
                 📝 Initiate New Agreement
               </button>

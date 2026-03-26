@@ -1,13 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router';
+
 import { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from  '@/components/SignatureCanvas'
-export const Route = createFileRoute('/agreements/create')({
-  component: CreateAgreement,
-});
+
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
-function CreateAgreement() {
+export default function AgreementCreatePage() {
   const [step, setStep] = useState<Step>(1);
   const [formData, setFormData] = useState({
     title: '',
@@ -17,7 +15,7 @@ function CreateAgreement() {
     buyer: { name: '', nrc: '', address: '', username: '' },
     witness: { name: '', nrc: '', address: '' },
   });
-
+  const currentRole = "seller"
   const [sellerSig, setSellerSig] = useState<string | null>(null);
   const [buyerSig, setBuyerSig] = useState<string | null>(null);
   const [witnessSig, setWitnessSig] = useState<string | null>(null);
