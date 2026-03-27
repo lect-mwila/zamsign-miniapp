@@ -4,3 +4,8 @@ pnpm-lock.yaml
 dist
 build
 .env
+.trae
+.tanstack
+.agents
+skills-lock.json
+.temp/

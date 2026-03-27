@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 
-
+import { useForm, FormProvider } from 'react-hook-form';
 export default function IndexPage() {
   const navigate = useNavigate()
 
@@ -30,14 +30,12 @@ export default function IndexPage() {
   //     tg.expand();
   //     tg.BackButton.show();
   //     tg.MainButton.show();
+  //     tg.MainButton.setText('Create Agreement');
+  //     tg.MainButton.onClick(() => navigate('/agreements/create'));
+  //     tg.BackButton.onClick(() => navigate('/'));
   //     // You can add more Telegram features here
   //   }
   // }, []);
-
-  const showScreen = (screen: 'dashboard' | 'create' | 'view') => {
-    setCurrentScreen(screen);
-    if (screen === 'dashboard') setActiveTab('all');
-  };
 
   const showTab = (tab: 'all' | 'inbox' | 'outbox' | 'progress' | 'completed') => {
     setActiveTab(tab);
@@ -56,8 +54,6 @@ export default function IndexPage() {
 
   return (
     <>
-      {/* ===================== DASHBOARD ===================== */}
-      {currentScreen === 'dashboard' && (
         <div id="screen-dashboard" className="screen active">
           <div className="header">
             <div>
@@ -130,7 +126,7 @@ export default function IndexPage() {
                       style={{ cursor: 'pointer' }}
                       onClick={() => {
                         setViewingIndex(globalIndex);
-                        showScreen('view');
+                        
                       }}
                     >
                       {/* Agreement card content - same as before */}
@@ -161,12 +157,12 @@ export default function IndexPage() {
             <button className={`tab-item ${activeTab === 'progress' ? 'active' : ''}`} onClick={() => showTab('progress')}>
               <span>🔄</span>Progress
             </button>
-            <button className="tab-item" onClick={() => showScreen('create')}>
+            <button className="tab-item" onClick={() => navigate('/agreements/create')}>
               <span>➕</span>New
             </button>
           </div>
         </div>
-      )}
+      
 
       {/* You can add {currentScreen === 'create' && <CreateScreen ... />} */}
       {/* and {currentScreen === 'view' && <ViewScreen agreement={agreements[viewingIndex!]} />} */}

@@ -7,6 +7,7 @@ import { Navigate, Route, Routes, HashRouter } from 'react-router-dom';
 import { useLaunchParams, useSignal, miniApp } from '@tma.js/sdk-react';
 
 import { routes } from '@/routes.tsx';
+import { AuthProvider } from '@/components/AuthProvider';
 
 import './style.css';
 
@@ -40,14 +41,14 @@ try {
 
 
 export function App() {
-  const lp = useLaunchParams();
-
   return (
       <HashRouter>
-        <Routes>
-          {routes.map((route) => <Route key={route.path} {...route} />)}
-          <Route path="*" element={<Navigate to="/"/>}/>
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {routes.map((route) => <Route key={route.path} {...route} />)}
+            <Route path="*" element={<Navigate to="/"/>}/>
+          </Routes>
+        </AuthProvider>
       </HashRouter>
   );
 }
